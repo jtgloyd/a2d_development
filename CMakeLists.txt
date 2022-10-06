@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.22)
 project(A2D VERSION 0.1)
 
 # Set options
-option(BUILD_TESTS "Compile the unit test executables" OFF)
-option(BUILD_EXAMPLES "Compile the toy executables" ON)
-option(BUILD_EXTENSION "Compile the pybind11 extension" ON)
+option(BUILD_TESTS "Compile the unit test executables" ON)
+option(BUILD_EXAMPLES "Compile the toy executables" OFF)
+option(BUILD_EXTENSION "Compile the pybind11 extension" OFF)
 option(DEBUG "a debug build without compiler optimization" OFF)
 
 # Specify c++ standard
@@ -22,11 +22,11 @@ else()
 endif()
 
 # Require Lapack
-find_package(LAPACK REQUIRED)
+#find_package(LAPACK REQUIRED)
 
 # Require MPI
-find_package(MPI REQUIRED)
-include_directories(${MPI_INCLUDE_PATH})
+#find_package(MPI REQUIRED)
+#include_directories(${MPI_INCLUDE_PATH})
 
 # Require OpenMP
 find_package(OpenMP REQUIRED)
