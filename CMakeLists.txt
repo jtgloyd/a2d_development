@@ -21,10 +21,10 @@ else()
   set(CMAKE_CXX_FLAGS "-g -O3")
 endif()
 
-# Require Lapack
+## Require Lapack
 #find_package(LAPACK REQUIRED)
-
-# Require MPI
+#
+## Require MPI
 #find_package(MPI REQUIRED)
 #include_directories(${MPI_INCLUDE_PATH})
 

@@ -9,6 +9,9 @@ namespace A2D {
 
 /*
   Vec3Axpy
+  This operation is a compound scalar multiplication of a vector (Ax)
+  and addition of another unscaled vector (py).  So Axpy means:
+  "a (scalar) times (vector) x plus (vector) y"
 */
 template <typename T>
 class Vec3VecADScalarAxpyExpr {
