@@ -1,4 +1,4 @@
-# Add tragets
+# Add targets
 add_executable(test_matcore3d test_matcore3d.cpp)
 add_executable(test_matcore2d test_matcore2d.cpp)
 add_executable(test_tmp3d test_tmp3d.cpp)

@@ -6,6 +6,8 @@
 
 % Packages
 \usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
 
 % Setup hyperref (must be loaded after other packages)
 \usepackage{hyperref}
@@ -18,6 +20,13 @@
 %    pdfpagemode=FullScreen,
 }
 
+% Code formatting for C++
+\lstset{%
+    language=C++,
+    backgroundcolor=\color{black!5}, % set background color
+    basicstyle=\footnotesize, % basic font setting
+}
+
 % Document
 \begin{document}
 
@@ -25,19 +34,21 @@
     This document is intended to compile and represent all the operations necessary to implement shell elements in A2D based on the (deprecated) previous implementation.
     Furthermore, this document will serve as a check-list for these operations as they are created within the new framework of A2D\@.
 
+% TODO: create ARBITRARY length vector operations in addition to vec2 and vec3 operations
 
-% TODO: double check with Dr. Kennedy if we are going to be just using arbitrary vector lengths or sticking with vec2, vec3, etc...
-% TODO: figure out how to use hyperref to link to specific lines in the other files, THEN when an operation is complete, hyperlink to it
+
+
 \section{Vector 3 Operations}\label{sec:vector-3-operations}
     \begin{itemize}
 %        \item \href{../tests/test_matcore2d.cpp}{test}
         \item \href{../include/a2dvecops3d.h}{Vector-Vector cross product}
         \begin{itemize}
-            \item ADVec3CrossProductExpr
-            \item Vec3Cross
+            \item ``inline void Vec3Cross''
         \end{itemize}
         \item Vector normalization (i.e.\ norm of vector)
     \end{itemize}
+
+% TODO: convert to using \subsection or \subsubsection instead of itemize environment, that way code snippets can be used
 
 \section{Matrix Vector Operations}\label{sec:matrix-vector-operations}
     \begin{itemize}
@@ -55,17 +66,20 @@
 \section{Matrix Matrix Operations}\label{sec:matrix-matrix-operations}
     \begin{itemize}
         \item 3x3 Matrix by 3x3 Matrix multiplication
-        \item 3x3 Matrix by 3x3 Matrix multiply and add (I'M NOT SURE WHAT THIS IS)
+        \item 3x3 Matrix by 3x3 Matrix multiply and add
         \item 3x3 Matrix Transpose by 3x3 Matrix multiplication
     \end{itemize}
 
 
-%% This is included in the normal vector 3 operations
-%\section{AD Vector 3 Operations}\label{sec:ad-vector-3-operations}
-%    \begin{itemize}
-%        \item Vector-Vector cross product
-%        \item Vector normalization (i.e.\ norm of vector)
-%    \end{itemize}
+% This is included in the normal vector 3 operations
+\section{AD Vector 3 Operations}\label{sec:ad-vector-3-operations}
+    \begin{itemize}
+        \item \href{../include/a2dvecops3d.h}{Vector-Vector cross product}
+        \begin{itemize}
+            \item ``inline ADVec3CrossProductExpr<T> Vec3Cross''
+        \end{itemize}
+        \item Vector normalization (i.e.\ norm of vector)
+    \end{itemize}
 
 \section{AD Matrix AD Vector Operations}\label{sec:ad-matrix-ad-vector-operations}
     \begin{itemize}
@@ -89,7 +103,7 @@
 \section{Matrix AD Matrix Operations}\label{sec:matrix-ad-matrix-operations}
     \begin{itemize}
         \item 3x3 Matrix by 3x3 Matrix multiplication
-        \item 3x3 Matrix by 3x3 Matrix multiply and add (I'M NOT SURE WHAT THIS IS)
+        \item 3x3 Matrix by 3x3 Matrix multiply and add
     \end{itemize}
 
 
