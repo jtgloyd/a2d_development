@@ -32,10 +32,12 @@ namespace A2D {
 // FOR: a2dvecops3d.h
 namespace A2D {
 
-//    TODO: Make function call naming conventions more consistent
+//    TODO: Make function call input naming conventions more consistent
 //    TODO: make class notations consistent
 
 //    QUESTION: Why is ADScalar.value not a function call but ADVec.value() is?
+// ANSWER: ADScalar.value is faster than ADScalar.value() but ADVec.value() can't be returned or accessed properly
+// without the function call
 
 //    QUESTION: Should scalar values (like those referenced above) be set by reference or by assignment?
 //    i.e. should I use:
@@ -43,12 +45,13 @@ namespace A2D {
 //    or
 //      T& nb = normObj.bvalue; // with:
 //      nb = ...;
-//ANSWER: Use single line
+// ANSWER: Use single line
 
 //    QUESTION: Should I be explicitly typing the core functions? e.g.:
 //      nb = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
 //    or
-//      nb = Vec3DotCore(x, xb) / n; // ANSWER: this is fine to use
+//      nb = Vec3DotCore(x, xb) / n;
+// ANSWER: this is fine to use
 
 
     /*
@@ -109,6 +112,7 @@ namespace A2D {
 //    QUESTION: What happens if we were to take the derivative with respect to a vector?
 //    The ab would be a vector and xb would be a matrix, so do we need to account for those changes?
 //    OR is it that we are ALWAYS going to be taking a derivative with respect to a scalar?
+// ANSWER: the derivative will always be with respect to some scalar (though the scalar may be
 
     /*
         Vec3Scale

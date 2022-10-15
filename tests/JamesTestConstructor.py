@@ -1,16 +1,11 @@
+import inspect
 import itertools
 import os
-from typing import List, Dict, Callable, Any, Set, Tuple, Union
+import warnings
+from typing import List, Dict, Callable, Any, Set, Tuple, Union, FrozenSet
 import numpy
 
 # TODO: replace properties with static properties where applicable
-
-# TODO: for AD variables, convert:
-#       expect_<type>_eq<template>(x, x_out);
-#       expect_<type>_eq<template>(xb, xb_out);
-#   To:
-#       expect_<type>_eq<template>(x_ad.value(), x_out);
-#       expect_<type>_eq<template>(x_ad.bvalue(), xb_out);
 
 
 var_generator_type = Callable[[], numpy.ndarray]
@@ -18,11 +13,28 @@ var_generator_type = Callable[[], numpy.ndarray]
 
 class VarType:
     """\
-generator must be a zero-argument function returning a numpy array of values.  The function must return a numpy array \
+VarType: A representation of a constant or non-differentiated variable type.  This object contains all the \
+information necessary to implement use of the type in a testing script.
+
+alias: the name to be defined and used by the C++ program for the type (usually ending in "_t").
+
+shortname: an abbreviated name for the type, used when describing the input types in the "TEST_F" parent classes.
+
+definition: the specific C or C++ type used to define the type as alias.  For example, "A2D::Vec<T, 3>" or "double".
+
+test: the templated test function used by C++ to test if two values of this type are equal.  For example, \
+"expect_val_eq" for scalar types or "expect_vec_eq<3>" for length 3 vector types.
+
+initialize_assignment_format: a format string used in conjunction with the "generator" to define a random instance \
+of the type.  This should usually have the form "const <alias> {var_name} = {0};" for scalar types or \
+"const <type> {var_name}[N] = {{{0}, {1}, {2}, ..., {N}}};" for iterable types, where <type> represents the base type \
+and N is the iterable length.
+
+generator: a zero-argument function returning a numpy array of values.  The function must return a numpy array \
 in order to be compatible with the complex step method implementations.  The values returned by the "generator" \
 function should be sufficient to initialize a random instance of the variable type when formatted as a variadic \
-argument to the "initialize_format" string using the str.format method
-    Ex. self.initialize_format.format(*self.generator(), **kwargs)
+argument to the "initialize_assignment_format" string using the str.format method.  For example, \
+self.initialize_format.format(*self.generator(), **kwargs)
 """
 
     __instances_by_alias__: Dict[str, "VarType"] = {}
@@ -95,6 +107,30 @@ argument to the "initialize_format" string using the str.format method
 
 
 class ADVarType:
+    """\
+ADVarType: A representation of an automatically differentiated variable type.  This object contains all the \
+information necessary to implement use of the type in a testing script.
+
+alias: the name to be defined and used by the C++ program for the type (usually ending in "_t").
+
+shortname: an abbreviated name for the type, used when describing the input types in the "TEST_F" parent classes.
+
+definition: the specific C or C++ type used to define the type as alias.  For example, "A2D::Vec<T, 3>" or "double".
+
+get_value: the method call operation used to obtain the base value for the type.  Usually ".value" or ".value()".
+
+get_bvalue: the method call operation used to obtain the seed or bar value for the type.  Usually ".bvalue" or \
+".bvalue()".
+
+parent: the VarType object this ADVarType object inherits from.  Both the value and bvalue of object of this type \
+must be of the parent type, and initialization of this type must take the form "<alias> <name>(<p>, <pb>);" where \
+p and pb are instances of the parent object.
+
+initialization_defaults: (optional) values for initialization of a new instance of this type, for use when declaration \
+of the "value" and "bvalue" parent objects is not necessary for the AD class to be instantiated.  MUST be defined when \
+such is the case, but should be left missing when not.  This is usually necessary when the parent type is not passed \
+to the constructor by reference.
+"""
     __instances_by_alias__: Dict[str, "ADVarType"] = {}
 
     alias: str
@@ -198,43 +234,149 @@ class VariableOverloadError(Exception):
 
 
 class NamingConventionConflict(Exception):
-    """Collision of variable names for given naming convention."""
+    """Collision of variable names for set naming convention."""
+    pass
+
+
+class VariableNameOverloadError(Exception):
+    """Multiple variables with the same name."""
     pass
 
 
 io_type = List[Tuple[str, ADVarType]]  # [(<var_name>, <var_type>), ...]
-non_constant_inputs_type = Set[str]  # {<var_name>, ...}  <-These are the active inputs
+non_constant_inputs_type = FrozenSet[str]  # frozenset(<var_name>, ...)  <-These are the active inputs
+non_constant_inputs_input_type = Set[str]  # {<var_name>, ...}  <-These are the active inputs
+variants_type = List[non_constant_inputs_type]
+variants_input_type = Union[List[non_constant_inputs_input_type],
+                            Set[non_constant_inputs_type],
+                            variants_type]
 input_data_type = Dict[str, Tuple[Any, ADVarType]]  # {<var_name>: (<value>, <var_type>), ...}
 operation_type = Callable[..., Tuple[numpy.ndarray, ...]]
 
 
 class TestFunction:
+    """\
+TestFunction: A representation of an overloaded operation to be tested.
+
+operation_name: the name of the overloaded operation within the A2D C++ code.  The operation should return an \
+instance of the resulting A2D class; all outputs or modified objects should be passed by reference to the operation.
+
+inputs: a list of variable-name, variable-type pairs that define the inputs to the overloaded operation in the MOST \
+differentiable state, that is, when no input is considered constant.  The variable names should be strings, and the \
+variable types should be ADVarType objects.
+
+outputs: a list of variable-name, variable-type pairs that define the outputs to the overloaded operation in the MOST \
+differentiable state.  For most if not all circumstances, all outputs should be differentiable in such a case.  \
+As with the "inputs" list, the variable names should be strings and the variable types should be ADVarType objects.
+
+operation: a function implementing the intended operation within python.  This function must take, as arguments, the \
+inputs defined by the "inputs" list, and must return a tuple of numpy.ndarray objects representing the outputs defined \
+by the "outputs" list.  The argument names must match the names given in the "inputs" list and should appear in the \
+same order as defined in the "inputs" list.  The outputs must be returned with the same order defined by the \
+"outputs" list.
+IMPORTANT: all outputs must be returned in a tuple of non-scalar numpy.ndarray objects, even scalars.  Scalar outputs \
+should be contained in a 1-dimensional, length 1 numpy.ndarray.  For example, an operation that has a single scalar \
+output should return "(numpy.array([scalar_output]), )".
+
+variants: (optional) a list of sets of input variable names defining the variations of the function to test.  Each \
+set of input variable names defines a test case where the given inputs are assumed to be differentiable, all other \
+inputs are assumed to be constants.  If left undefined, then the power set of variable names from "inputs" is used.
+"""
+
     __h__ = 1e-30
 
     operation_name: str
-    operation: operation_type  # TODO: format
-    # TODO: ^DOCUMENT
-    #   *Must return iterable of outputs, even when there is just a single output
+    operation: operation_type
     inputs: io_type  # [(<var_name>, <var_type>), ...]
     outputs: io_type  # [(<var_name>, <var_type>), ...]
-    variants: List[non_constant_inputs_type]
+    variants: variants_type
 
     def __init__(self,
                  operation_name: str,
                  inputs: io_type,
                  outputs: io_type,
                  operation: operation_type,
-                 variants: List[non_constant_inputs_type],
+                 variants: variants_input_type = None,
                  ):
         self.operation_name = operation_name
         self.operation = operation
-        # TODO: add signature check for operation based on inputs and outputs
         self.inputs = inputs
         self.outputs = outputs
-        # TODO: generate expected variants (ignoring duplicates by symmetry) and check against variants list, then
-        #  print a warning message if they do not match.
-        self.variants = variants
+
+        # Make sure inputs and outputs all have unique names
+        var_names = {var_name for var_name, var_type in itertools.chain(self.inputs, self.outputs)}
+        if len(var_names) != (len(self.inputs) + len(self.outputs)):
+            raise VariableNameOverloadError(f'Overlap detected in variable names for\n'
+                                            f'TestFunction({self.operation_name}, ...):\n'
+                                            f'\tinputs = {self.inputs}\n'
+                                            f'\toutputs = {self.outputs}\n')
+
+        # Check and/or assign functional variants
+        if variants is not None:
+            # noinspection PyTypeChecker
+            self.variants = sorted(map(frozenset, variants))
+            expected_variants = self.__expected_variants__()
+            frozen_variants = set(self.variants)
+            if bool(expected_variants.symmetric_difference(frozen_variants)):
+                print(f"WARNING: incomplete or unexpected set of function variants prescribed to:\n"
+                      f"\t\tTestFunction({self.operation_name}, ...)\n"
+                      f"\tGiven: {tuple(map(set, frozen_variants))}\n"
+                      f"\tExpected: {tuple(map(set, expected_variants))}\n")
+                pass
+            pass
+        else:
+            # "variants" now falls back on __expected_variants__
+            self.variants = sorted(self.__expected_variants__())
+            pass
+
+        # Inspect operation to check for agreement between inputs and outputs
+        self.__inspect_operation__()
+
         pass
+
+    def __inspect_operation__(self):
+        """Make sure the operation signature matches that of the inputs and outputs."""
+        operation_arg_spec = inspect.getfullargspec(self.operation)
+
+        # Deal with variadic arguments
+        if operation_arg_spec.varargs is not None:
+            # TODO
+            w = FutureWarning(f'from TestFunction({self.operation_name}, ...)'
+                              f'\n\tTestFunction.__inspect_operation__ is not yet capable of inspecting variadic'
+                              f'\n\targuments in the "operation" function.  Dependable inspection and agreement'
+                              f'\n\tchecking is unlikely.')
+            warnings.warn(w)
+            pass
+
+        # Deal with variadic keyword arguments
+        if operation_arg_spec.varkw is not None:
+            # TODO
+            w = FutureWarning(f'from TestFunction({self.operation_name}, ...)'
+                              f'\n\tTestFunction.__inspect_operation__ is not yet capable of inspecting variadic'
+                              f'\n\tkeyword arguments in the "operation" function.  Dependable inspection and'
+                              f'\n\tagreement checking is unlikely.')
+            warnings.warn(w)
+            pass
+
+        # Check to see if the function is annotated
+        if operation_arg_spec.annotations:
+            # function is annotated
+            # TODO
+            pass
+        else:
+            # function is not annotated
+            # TODO
+            pass
+        pass
+
+    def __expected_variants__(self):
+        input_names = [var_name for var_name, var_type in self.inputs]
+        input_name_power_set = set(
+            map(frozenset, itertools.chain.from_iterable(itertools.combinations(input_names, r)
+                                                         for r in range(len(input_names) + 1)))
+        )
+        # TODO: address functional symmetries (and change doc once complete)
+        return input_name_power_set
 
     # TODO: figure out how to nest tests so, for example, we can have all the Dot product variations under a single tab
     #  This should be some variation on the "full_test_variant" method, and possibly the "_test_function_" method in
@@ -429,9 +571,12 @@ TEST_F({test_variant_name}, {test_type}) {{
                 ]
         )
 
-        auto_typing = 'auto expr = ' if bool(non_constant_inputs) else ''
+        # I've removed the auto_typing component because this is unnecessary for all passive tests, since the expr
+        # object does not need to have its forward or reverse methods called.
+        # auto_typing = 'auto expr = ' if bool(non_constant_inputs) else ''
         evaluations_list = [
-            f'{auto_typing}A2D::{self.operation_name}({self._evaluation_signature_(non_constant_inputs)})'
+            # f'{auto_typing}A2D::{self.operation_name}({self._evaluation_signature_(non_constant_inputs)})'
+            f'A2D::{self.operation_name}({self._evaluation_signature_(non_constant_inputs)})'
             f';  /*UNQ_TF_TFP_04*/'
         ]
 
@@ -660,6 +805,21 @@ protected:
 
 
 class TestConstructor:
+    """\
+TestConstructor: An object that constructs a full test suite for functions defined by TestFunction objects.  Use the \
+.construct method to write the test file.  The test must be manually added to the test CMakeLists.txt file.
+
+name: the name of the test file to be constructed.  The convention is to include all tests for objects in a \
+"<name>.h" file in a single "test_<name>.cpp" file of the same name.
+
+packages: packages to include in addition to those automatically included for all test files.  Automatically included \
+packages are "gtest/gtest.h", "a2dobjs.h", "a2dtypes.h", and "test_commons.h"
+
+var_types: a list of all VarType and ADVarType objects directly or indirectly used by the TestFunction objects.
+
+test_functions: a list of TestFunction objects describing the overloaded operations to be tested.
+"""
+
     name: str
     packages: List[str]
     var_types: List[Union[VarType, ADVarType]]
@@ -804,11 +964,17 @@ protected:
         if destination is None:
             return file_str
         filename = f"{self.name if name_override is None else name_override.strip().rstrip('.cpp')}.cpp"
+        filename = 'test_' + filename.lstrip('test_')
         separator = os.altsep if os.altsep in destination else os.sep
-        full_filename = destination.rstrip(separator) + separator + 'test_' + filename.lstrip('test_')
+        full_filename = destination.rstrip(separator) + separator + filename
         with open(full_filename, 'w') as f:
             f.write(file_str)
             f.close()
+
+        # TODO: dynamically add file to CMakeLists.txt
+        print(f'{filename} successfully written to:\n'
+              f'{destination}\n'
+              f'IMPORTANT: you must manually add this test suite to the test CMakeLists.txt file.')
         pass
 
     pass
@@ -947,14 +1113,15 @@ if __name__ == '__main__0':
     t_t = VarType('T', 'Scalar', 'double', 'expect_val_eq', 'const T {var_name} = {0};', lambda: numpy.random.random(1))
     i_t = VarType('I', 'Int', 'int', 'expect_val_eq', 'const T {var_name} = {0};',
                   lambda: numpy.random.randint(-256, 256, 1))
-    vec_t = VarType('Vec_t', 'Vec', 'A2D::Vec<T, 3>', 'expect_vec_eq<3>',
-                    'const T {var_name}[3] = {{{0},\n{1},\n{2}}};', lambda: numpy.random.random(3))
-    advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', vec_t)
-    adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', t_t)
+    vec_t = VarType('Vec_t', 'Vec', 'A2D::Vec<T, 3>', 'expect_vec_eq<3>', 'const T {var_name}[3] = {{{0}, {1}, {2}}};',
+                    lambda: numpy.random.random(3))
+    advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', '.value()', '.bvalue()', vec_t)
+    adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', '.value', '.bvalue', t_t, (0, 0))
 
-    tf = TestFunction("Vec3Cross", lambda x, y: (numpy.cross(x, y),),
+    tf = TestFunction("Vec3Cross",
                       inputs=[('x', advec_t), ('y', advec_t)],
                       outputs=[('v', advec_t), ],
+                      operation=lambda x, y: (numpy.cross(x, y),),
                       variants=[{'x', 'y'}, set()])
 
     tc = TestConstructor("test", ["a2dvecops3d.h"], [t_t, i_t, vec_t, advec_t, adscalar_t],
@@ -1011,8 +1178,8 @@ if __name__ == '__main__0':
                   lambda: numpy.random.randint(-256, 256, 1))
     vec_t = VarType('Vec_t', 'Vec', 'A2D::Vec<T, 3>', 'expect_vec_eq<3>', 'const T {var_name}[3] = {{{0}, {1}, {2}}};',
                     lambda: numpy.random.random(3))
-    advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', vec_t)
-    adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', t_t)
+    advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', '.value()', '.bvalue()', vec_t)
+    adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', '.value', '.bvalue', t_t, (0, 0))
 
     tx = {t_t, i_t, vec_t, advec_t, adscalar_t}
     print(tx)
@@ -1138,7 +1305,7 @@ if __name__ == '__main__':
                              ('x', advec_t), ],
                      outputs=[('S', admat_t), ],
                      operation=lambda a, x: (numpy.multiply(a, numpy.outer(x, x)).flatten(),),
-                     variants=[{'a', 'x'}, {'a'}, {'x'}, set()])
+                     variants=[{'a', 'x'}, {'a'}, {'x'}, set()]),
     ]
 
     tc = TestConstructor("vector_operation_development", ["vector_operation_development.h"],
