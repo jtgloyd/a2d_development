@@ -43,11 +43,12 @@ namespace A2D {
 //    or
 //      T& nb = normObj.bvalue; // with:
 //      nb = ...;
+//ANSWER: Use single line
 
 //    QUESTION: Should I be explicitly typing the core functions? e.g.:
 //      nb = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
 //    or
-//      nb = Vec3DotCore(x, xb) / n;
+//      nb = Vec3DotCore(x, xb) / n; // ANSWER: this is fine to use
 
 
     /*
@@ -80,6 +81,7 @@ namespace A2D {
             T& nb = normObj.bvalue;
 //            operations:
             nb = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
+            normObj.bvalue = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
         }
 
         void reverse() {
@@ -190,7 +192,7 @@ namespace A2D {
 //            output:
             T& ab = alpha.bvalue;
 //            operations:
-            ab = Vec3DotCore(vb, x);
+            ab = Vec3DotCore<T, Vec<T, 3>>(vb, x);
         };
 
         const Vec<T, 3>& x;
@@ -239,9 +241,9 @@ namespace A2D {
             Vec<T, 3>& xb = xObj.bvalue();
             T& ab = alpha.bvalue;
 //            operations:
-            ab = Vec3DotCore(vb, x);
+            ab = Vec3DotCore<T, Vec<T, 3>>(vb, x);
             Vec3ScaleCore(a, vb, xb);
-        };
+        }
 
         ADVec<Vec<T, 3>>& xObj;
         ADVec<Vec<T, 3>>& vObj;
@@ -307,12 +309,13 @@ namespace A2D {
 
     template <typename T>
     inline ADVec3DotVecExpr<T> Vec3Dot(ADVec<Vec<T, 3>>& x,
-                                       ADVec<Vec<T, 3>>& y,
+                                       const Vec<T, 3>& y,
                                        ADScalar<T>& alpha) {
         return ADVec3DotVecExpr<T>(x, y, alpha);
     }
 
 //    TODO: Vec3DotADVecExpr (??? is this necessary because its equivalent to just swapping order?)
+// ANSWER: not necessary
 
     template <typename T>
     class ADVec3DotADVecExpr {
@@ -437,8 +440,8 @@ namespace A2D {
         ADVec<Vec<T, 3>>& vObj;
 
     private:
-        T& normInv;
-        T& negativeSquaredNormInv;
+        T normInv;
+        T negativeSquaredNormInv;
     };
 
     template <typename T>
@@ -473,7 +476,7 @@ namespace A2D {
                                              ADMat<Mat<T, 3, 3>>& sObj)
                 : alpha(alpha), xObj(xObj), sObj(sObj) {
             const Vec<T, 3>& x = xObj.value();
-            Vec<T, 3>& S = sObj.value();
+            Mat<T, 3, 3>& S = sObj.value();
             Vec3OuterProductScaleCore(alpha, x, x, S);
         };
 
@@ -482,10 +485,10 @@ namespace A2D {
             const Vec<T, 3>& x = xObj.value();
             const Vec<T, 3>& xb = xObj.bvalue();
 //            output:
-            Vec<T, 3>& ax();
+            Vec<T, 3> ax;
             Mat<T, 3, 3>& Sb = sObj.bvalue();
 //            operations:
-            Vec3ScaleCore(alpha, x, ax);
+            Vec3ScaleCore<T, Vec<T, 3>>(alpha, x, ax);
             Vec3OuterProductCore(xb, ax, Sb);
             Vec3OuterProductAddCore(ax, xb, Sb);
             // ^ NOTE: This can be made faster by using the fact that the result will be symmetric
@@ -494,7 +497,7 @@ namespace A2D {
         void reverse() {
 //            input:
             const Vec<T, 3>& x = xObj.value();
-            const Vec<T, 3>& Sb = sObj.bvalue();
+            const Mat<T, 3, 3>& Sb = sObj.bvalue();
 //            output:
             Vec<T, 3>& xb = xObj.bvalue();
 //            operations:
@@ -521,7 +524,7 @@ namespace A2D {
                                              ADMat<Mat<T, 3, 3>>& sObj)
                 : alpha(alpha), x(x), sObj(sObj) {
             const T& a = alpha.value;
-            Vec<T, 3>& S = sObj.value();
+            Mat<T, 3, 3>& S = sObj.value();
             Vec3OuterProductScaleCore(a, x, x, S);
         };
 
@@ -537,7 +540,7 @@ namespace A2D {
 
         void reverse() {
 //            input:
-            const Vec<T, 3>& Sb = sObj.bvalue();
+            const Mat<T, 3, 3>& Sb = sObj.bvalue();
             const T& a = alpha.value;
 //            output:
             T& ab = alpha.bvalue;
@@ -566,7 +569,7 @@ namespace A2D {
                 : alpha(alpha), xObj(xObj), sObj(sObj) {
             const Vec<T, 3>& x = xObj.value();
             const T& a = alpha.value;
-            Vec<T, 3>& S = sObj.value();
+            Mat<T, 3, 3>& S = sObj.value();
             Vec3OuterProductScaleCore(a, x, x, S);
         };
 
@@ -577,26 +580,26 @@ namespace A2D {
             const T& a = alpha.value;
             const T& ab = alpha.bvalue;
 //            output:
-            Vec<T, 3>& ax();
+            Vec<T, 3> ax;
             Mat<T, 3, 3>& Sb = sObj.bvalue();
 //            operations:
-            Vec3ScaleCore(a, x, ax);
-            Vec3OuterProductCore(xb, ax, Sb);
-            Vec3OuterProductAddCore(ax, xb, Sb);
+            Vec3ScaleCore<T, Vec<T, 3>>(a, x, ax);
+            Vec3OuterProductCore<Vec<T, 3>, Mat<T, 3, 3>>(xb, ax, Sb);
+            Vec3OuterProductAddCore<Vec<T, 3>, Mat<T, 3, 3>>(ax, xb, Sb);
             // ^ NOTE: This can be made faster by using the fact that the result will be symmetric
-            Vec3OuterProductAddScaleCore(ab, x, x, Sb);
+            Vec3OuterProductAddScaleCore<T, Vec<T, 3>, Mat<T, 3, 3>>(ab, x, x, Sb);
         }
 
         void reverse() {
 //            input:
             const Vec<T, 3>& x = xObj.value();
-            const Vec<T, 3>& Sb = sObj.bvalue();
+            const Mat<T, 3, 3>& Sb = sObj.bvalue();
             const T& a = alpha.value;
 //            output:
             Vec<T, 3>& xb = xObj.bvalue();
             T& ab = alpha.bvalue;
 //            operations:
-            ab = Mat3x3InnerProductCore<T>(Sb, x, x);
+            ab = Mat3x3InnerProductCore<T, Vec<T, 3>, Mat<T, 3, 3>>(Sb, x, x);
             Mat3x3VecMultScaleCore(2 * a, Sb, x, xb);
         }
 
