@@ -3,14 +3,14 @@
 
 namespace A2D {
 
-/**
- * @brief scalar-vector multiply and add v = a * x + b * y
- * @param alpha:  Scalar to multiply x
- * @param x    :  3-Vector
- * @param beta :  Scalar to multiply y
- * @param y    :  3-Vector
- * @param v    :  3-Vector to store result
- */
+    /**
+     * @brief scalar-vector multiply and add:  v = a * x + b * y
+     * @param alpha:  Scalar to multiply x
+     * @param x    :  3-Vector
+     * @param beta :  Scalar to multiply y
+     * @param y    :  3-Vector
+     * @param v    :  3-Vector to store result
+     */
     template <typename T, class VecType>
     inline void Vec3AXPBYCore(const T alpha,
                               const VecType& x,
@@ -20,6 +20,43 @@ namespace A2D {
         v(0) = (alpha * x(0)) + (beta * y(0));
         v(1) = (alpha * x(1)) + (beta * y(1));
         v(2) = (alpha * x(2)) + (beta * y(2));
+    }
+
+    /**
+     * @brief vector add then multiply (in place):  v = (v + x) * a
+     * @param alpha:  Scalar to multiply result
+     * @param x    :  3-Vector
+     * @param v    :  3-Vector to add to then multiply
+     */
+    template <typename T, class VecType>
+    inline void Vec3AddThenScaleCore(const T alpha,
+                                     const VecType& x,
+                                     VecType& v) {
+        v(0) = alpha * (x(0) + v(0));
+        v(1) = alpha * (x(1) + v(1));
+        v(2) = alpha * (x(2) + v(2));
+//        // TODO: see which option is faster
+//        v(0) += x(0);
+//        v(0) *= alpha;
+//        v(1) += x(1);
+//        v(1) *= alpha;
+//        v(2) += x(2);
+//        v(2) *= alpha;
+    }
+
+    /**
+     * @brief vector scale then add (in place):  v = v + (a * x)
+     * @param alpha:  Scalar to multiply x vector
+     * @param x    :  3-Vector to scale
+     * @param v    :  3-Vector to add scaled vector
+     */
+    template <typename T, class VecType>
+    inline void Vec3ScaleThenAddCore(const T alpha,
+                                     const VecType& x,
+                                     VecType& v) {
+        v(0) += alpha * x(0);
+        v(1) += alpha * x(1);
+        v(2) += alpha * x(2);
     }
 
     template <typename T, class VecType>

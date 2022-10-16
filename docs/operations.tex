@@ -1,55 +1,151 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
+\usepackage{enumitem}
+
+\setlist[itemize]{leftmargin=5pt}  % make indentations for itemize lists smaller
+\setlist[enumerate]{leftmargin=*}  % remove indentations from enumerate lists
+
+% variable commands
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vxb}{\bar{\mathbf{x}}}
+\newcommand{\vxpi}{\dot{\mathbf{x}}_{i}}
+\newcommand{\vxhi}{\hat{\mathbf{x}}_{i}}
+\newcommand{\ab}{\bar{\alpha}}
+\newcommand{\api}{\dot{\alpha}_{i}}
+\newcommand{\ahi}{\hat{\alpha}_{i}}
+\newcommand{\vy}{\mathbf{y}}
+\newcommand{\vyb}{\bar{\mathbf{y}}}
+\newcommand{\vypi}{\dot{\mathbf{y}}_{i}}
+\newcommand{\vyhi}{\hat{\mathbf{y}}_{i}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\vvb}{\bar{\mathbf{v}}}
+\newcommand{\vvpi}{\dot{\mathbf{v}}_{i}}
+\newcommand{\vvhi}{\hat{\mathbf{v}}_{i}}
+\newcommand{\ms}{\mathbf{S}}
+\newcommand{\msb}{\bar{\mathbf{S}}}
+\newcommand{\mspi}{\dot{\mathbf{S}}_{i}}
+\newcommand{\mshi}{\hat{\mathbf{S}}_{i}}
 
 \begin{document}
 
-\section{Scalar operations}
+    \section{Scalar operations} \label{sec:scalar-operations}
 
-\section{Vector operations}
 
-\begin{enumerate}
-\item Norm $\alpha = ||\mathbf{x}||_{2}$
-\begin{itemize}
-\item Forward: $\dot{\alpha} = \dfrac{ \mathbf{x}^{T} \dot{\mathbf{x}}}{||\mathbf{x}||_{2}}$
-\item Reverse: $\bar{\mathbf{x}} = \dfrac{\bar{\alpha}}{||\mathbf{x}||_{2}} \mathbf{x}$
-\end{itemize}
+    \section{Vector operations} \label{sec:vector-operations}
 
-\item Scale $\mathbf{v} = \alpha \mathbf{x}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dot{\alpha} \mathbf{x} + \alpha \dot{\mathbf{x}}$
-\item Reverse: $\bar{\alpha} = \bar{\mathbf{v}}^{T} \mathbf{x}$, $\bar{\mathbf{x}} = \alpha \bar{\mathbf{v}}$
-\end{itemize}
+    \begin{enumerate}
+        \item Norm $\alpha = ||\mathbf{x}||_{2}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\alpha} = \dfrac{ \mathbf{x}^{T} \dot{\mathbf{x}}}{||\mathbf{x}||_{2}}$
+                \item Reverse: $\bar{\mathbf{x}} = \dfrac{\bar{\alpha}}{||\mathbf{x}||_{2}} \mathbf{x}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+%                \item Reverse: $\bar{\mathbf{x}} = \dfrac{\bar{\alpha}}{||\mathbf{x}||_{2}} \mathbf{x}$
+%                \item H-Forward: $\dot{\alpha}_{i} = \dfrac{ \mathbf{x}^{T} \dot{\mathbf{x}}_{i}}{||\mathbf{x}||_{2}}$
+                \item H-Forward: $\api = \dfrac{ \vx^{T} \vxpi}{|| \vx ||_{2}}$
+%                \item H-Reverse: $\hat{\mathbf{x}}_{i} = \dfrac{\hat{\alpha}_{i}}{||\mathbf{x}||_{2}} \mathbf{x} + \bar{\alpha} \left( \dfrac{\dot{\mathbf{x}}_{i}}{||\mathbf{x}||_{2}} - \bar{\mathbf{x}} \dfrac{\mathbf{x} \cdot \dot{\mathbf{x}}_{i}}{||\mathbf{x}||_{2}^{3}} \right)$
+                \item H-Reverse: $\vxhi = \dfrac{\ahi}{|| \vx ||_{2}} \vx + \ab \left( \dfrac{\vxpi}{|| \vx ||_{2}} - \vxb \dfrac{\vx \cdot \vxpi}{|| \vx ||_{2}^{3}} \right)$
+            \end{itemize}
+        \end{itemize}
 
-\item AXPY $\mathbf{v} = \alpha \mathbf{x} + \mathbf{y}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dot{\alpha} \mathbf{x} + \alpha \dot{\mathbf{x}} + \dot{\mathbf{y}}$
-\item Reverse: $\bar{\alpha} = \bar{\mathbf{v}}^{T} \mathbf{x}$, $\bar{\mathbf{x}} = \alpha \bar{\mathbf{v}}$, $\bar{\mathbf{y}} = \bar{\mathbf{v}}$
-\end{itemize}
+        \item Scale $\mathbf{v} = \alpha \mathbf{x}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\mathbf{v}} = \dot{\alpha} \mathbf{x} + \alpha \dot{\mathbf{x}}$
+                \item Reverse: $\bar{\alpha} = \bar{\mathbf{v}}^{T} \mathbf{x}$, $\bar{\mathbf{x}} = \alpha \bar{\mathbf{v}}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+%                \item H-Forward: $\dot{\mathbf{v}}_{i} = \dot{\alpha}_{i} \mathbf{x} + \alpha \dot{\mathbf{x}}_{i}$
+                \item H-Forward: $\vvpi = \api \vx + \alpha \vxpi$
+%                \item H-Reverse: $\hat{\alpha}_{i} = \hat{\mathbf{v}}_{i} \cdot \mathbf{x} + \bar{\mathbf{v}} \cdot \dot{\mathbf{x}}_i$, $\hat{\mathbf{x}}_{i} = \alpha \hat{\mathbf{v}}_{i} + \dot{\alpha}_{i} \bar{\mathbf{v}}$
+                \item H-Reverse: $\ahi = \vvhi \cdot \vx + \vvb \cdot \vxpi$, $\vxhi = \alpha \vvhi + \api \vvb$
+            \end{itemize}
+        \end{itemize}
 
-\item Dot-product $\alpha = \mathbf{x}^{T} \mathbf{y}$
-\begin{itemize}
-\item Forward: $\dot{\alpha} = \dot{\mathbf{x}}^{T} \mathbf{y} + \mathbf{x}^{T} \dot{\mathbf{y}}$
-\item Reverse: $\bar{\mathbf{x}} = \bar{\alpha} \mathbf{y}$, $\bar{\mathbf{y}} = \bar{\alpha} \mathbf{x}$
-\end{itemize}
+        \item AXPY $\mathbf{v} = \alpha \mathbf{x} + \mathbf{y}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\mathbf{v}} = \dot{\alpha} \mathbf{x} + \alpha \dot{\mathbf{x}} + \dot{\mathbf{y}}$
+                \item Reverse: $\bar{\alpha} = \bar{\mathbf{v}}^{T} \mathbf{x}$, $\bar{\mathbf{x}} = \alpha \bar{\mathbf{v}}$, $\bar{\mathbf{y}} = \bar{\mathbf{v}}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+%                \item H-Forward: $\dot{\mathbf{v}}_{i} = \dot{\alpha}_{i} \mathbf{x} + \alpha \dot{\mathbf{x}}_{i} + \dot{\mathbf{y}}_{i}$
+                \item H-Forward: $\vvpi = \api \vx + \alpha \vxpi + \vypi$
+                \item H-Reverse: $\ahi = \vvhi \cdot \vx + \vvb \cdot \vxpi$, $\vxhi = \alpha \vvhi + \api \vvb$, $\vyhi = \vvhi$
+            \end{itemize}
+        \end{itemize}
 
-\item Cross-product $\mathbf{v} = \mathbf{x} \times \mathbf{y}$,
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{x}} \times \mathbf{y} + \mathbf{x} \times \dot{\mathbf{y}}$
-\item Reverse: $\bar{\mathbf{x}} = \mathbf{y} \times \bar{\mathbf{v}}$, $\bar{\mathbf{y}} = \bar{\mathbf{v}} \times \bar{\mathbf{x}}$,
-\end{itemize}
+        \item Dot-product $\alpha = \mathbf{x}^{T} \mathbf{y}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\alpha} = \dot{\mathbf{x}}^{T} \mathbf{y} + \mathbf{x}^{T} \dot{\mathbf{y}}$
+                \item Reverse: $\bar{\mathbf{x}} = \bar{\alpha} \mathbf{y}$, $\bar{\mathbf{y}} = \bar{\alpha} \mathbf{x}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+                \item H-Forward: $\api = \vxpi \cdot \vy + \vx \cdot \vypi$
+                \item H-Reverse: $\vxhi = \ahi \vy + \ab \vypi$, $\vyhi = \ahi \vx + \ab \vxpi$
+            \end{itemize}
+        \end{itemize}
 
-\item Normalize $\mathbf{v} = \dfrac{\mathbf{x}}{||\mathbf{x}||_{2}}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dfrac{\dot{\mathbf{x}}}{||\mathbf{x}||_{2}} - \dfrac{(\dot{\mathbf{x}}^{T} \mathbf{x}) \mathbf{x}}{||\mathbf{x}||_{2}^{3}}$
-\item Reverse: $\bar{\mathbf{x}} = \dfrac{\bar{\mathbf{v}}}{||\mathbf{x}||_{2}} - \dfrac{(\bar{\mathbf{v}}^{T} \mathbf{x}) \mathbf{x}}{||\mathbf{x}||_{2}^{3}}$
-\end{itemize}
+        \item Cross-product $\mathbf{v} = \mathbf{x} \times \mathbf{y}$,
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{x}} \times \mathbf{y} + \mathbf{x} \times \dot{\mathbf{y}}$
+                \item Reverse: $\bar{\mathbf{x}} = \mathbf{y} \times \bar{\mathbf{v}}$, $\bar{\mathbf{y}} = \bar{\mathbf{v}} \times \mathbf{x}$,
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+                \item H-Forward: $\vvpi = \vxpi \times \vy + \vx \times \vypi$
+                \item H-Reverse: $\vxhi = \vy \times \vvhi + \vvb \times \vypi$, $\vyhi = \vvhi \times \vx + \vxpi \times \vvb$
+            \end{itemize}
+        \end{itemize}
 
-\item Symmetric outer-product $\mathbf{S} = \alpha \mathbf{x}\mathbf{x}^{T}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{S}} = \dot{\alpha}  \mathbf{x}\mathbf{x}^{T} + \alpha( \dot{\mathbf{x}} \mathbf{x}^{T} + \mathbf{x} \dot{\mathbf{x}}^{T})$
-\item Reverse: $\bar{\alpha} = \mathbf{x}^{T} \bar{\mathbf{S}} \mathbf{x}$, $\bar{\mathbf{x}} = 2 \alpha \bar{\mathbf{S}} \mathbf{x}$
-\end{itemize}
+        \item Normalize $\mathbf{v} = \dfrac{\mathbf{x}}{||\mathbf{x}||_{2}}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\mathbf{v}} = \dfrac{\dot{\mathbf{x}}}{||\mathbf{x}||_{2}} - \dfrac{(\dot{\mathbf{x}}^{T} \mathbf{x}) \mathbf{x}}{||\mathbf{x}||_{2}^{3}}$
+                \item Reverse: $\bar{\mathbf{x}} = \dfrac{\bar{\mathbf{v}}}{||\mathbf{x}||_{2}} - \dfrac{(\bar{\mathbf{v}}^{T} \mathbf{x}) \mathbf{x}}{||\mathbf{x}||_{2}^{3}}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+                \item H-Forward: $\vvpi = \dfrac{\vxpi}{|| \vx ||_{2}} - \vx \dfrac{\vxpi \cdot \vx}{|| \vx ||_{2}^{3}}$
+                \item H-Reverse: $\vxhi = \dfrac{\vvhi}{|| \vx ||_{2}} - \vx \dfrac{\vvhi \cdot \vx}{|| \vx ||_{2}^{3}} - \vx \dfrac{\vvb \cdot \vxpi}{|| \vx ||_{2}^{3}} - \vv \dfrac{\vxpi \cdot \vx}{|| \vx ||_{2}^{3}} - \vxpi \dfrac{\vvb \cdot \vx}{|| \vx ||_{2}^{3}} + \vx \dfrac{3 (\vxpi \cdot \vx) (\vvb \cdot \vx)}{|| \vx ||_{2}^{5}}$
+            \end{itemize}
+        \end{itemize}
+
+        \item Symmetric outer-product $\mathbf{S} = \alpha \mathbf{x}\mathbf{x}^{T}$
+        \begin{itemize}
+            \item First Order:
+            \begin{itemize}
+                \item Forward: $\dot{\mathbf{S}} = \dot{\alpha}  \mathbf{x}\mathbf{x}^{T} + \alpha( \dot{\mathbf{x}} \mathbf{x}^{T} + \mathbf{x} \dot{\mathbf{x}}^{T})$
+                \item Reverse: $\bar{\alpha} = \mathbf{x}^{T} \bar{\mathbf{S}} \mathbf{x}$, $\bar{\mathbf{x}} = 2 \alpha \bar{\mathbf{S}} \mathbf{x}$
+            \end{itemize}
+            \item Second Order:
+            \begin{itemize}
+                \item H-Forward: $\mspi = \api \vx \vx^{T} + \alpha\left( \vxpi \vx^{T} + \vx \vxpi^T \right)$
+                \item H-Reverse: $\ahi = \vx \cdot \left( \mshi \cdot \vx + 2 \msb \cdot \vxpi \right)$, $\vxhi = 2 \alpha \left( \mshi \cdot \vx + \msb \cdot \vxpi \right) + 2 \api \msb \cdot \vx$
+            \end{itemize}
+        \end{itemize}
+%        \begin{itemize}
+%            \item First Order:
+%            \item Second Order:
+%            \begin{itemize}
+%                \item H-Forward:
+%                \item H-Reverse:
+%            \end{itemize}
+%        \end{itemize}
 
 %\item Symmetric double outer-product $\mathbf{S} = \alpha (\mathbf{x} \mathbf{y}^{T} + \mathbf{y} \mathbf{x}^{T})$
 %\begin{itemize}
@@ -62,119 +158,121 @@
 %\item Reverse $\bar{\alpha} = \mathbf{x}^{T} \bar{\mathbf{A}} \mathbf{y}$, $\bar{x} = \alpha \bar{\mathbf{A}} \mathbf{y}$, $\bar{\mathbf{y}} = \alpha \bar{\mathbf{A}}^{T} \mathbf{x}$
 %\end{itemize}
 
-\end{enumerate}
+    \end{enumerate}
 
-\section{Matrix-vector operations}
 
-\begin{enumerate}
-\item Matrix-vector product $\mathbf{v} = \mathbf{A} \mathbf{x}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{A}} \mathbf{x} + \mathbf{A} \dot{\mathbf{x}}$
-\item Reverse: $\bar{\mathbf{x}} = \mathbf{A}^{T} \bar{\mathbf{y}}$, $\bar{\mathbf{A}} = \bar{\mathbf{v}} \mathbf{x}^{T}$
-\end{itemize}
+    \section{Matrix-vector operations}\label{sec:matrix-vector-operations}
 
-\item Matrix-vector product $\mathbf{v} = \mathbf{A}^{T} \mathbf{x}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{A}}^{T} \mathbf{x} + \mathbf{A}^{T} \dot{\mathbf{x}}$
-\item Reverse: $\bar{\mathbf{x}} = \mathbf{A} \bar{\mathbf{y}}$, $\bar{\mathbf{A}} = \mathbf{x} \bar{\mathbf{v}}^{T}$
-\end{itemize}
+    \begin{enumerate}
+        \item Matrix-vector product $\mathbf{v} = \mathbf{A} \mathbf{x}$
+        \begin{itemize}
+            \item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{A}} \mathbf{x} + \mathbf{A} \dot{\mathbf{x}}$
+            \item Reverse: $\bar{\mathbf{x}} = \mathbf{A}^{T} \bar{\mathbf{y}}$, $\bar{\mathbf{A}} = \bar{\mathbf{v}} \mathbf{x}^{T}$
+        \end{itemize}
 
-\item Matrix inner product $\alpha = \mathbf{x}^{T} \mathbf{A} \mathbf{y}$
-\begin{itemize}
-\item Forward: $\dot{\alpha} = \dot{\mathbf{x}}^{T} \mathbf{A} \mathbf{y} + \mathbf{x}^{T} \dot{\mathbf{A}} \mathbf{y} + \mathbf{x}^{T} \mathbf{A} \dot{\mathbf{y}}$
-\item Reverse: $\bar{\mathbf{x}} = \bar{\alpha} \mathbf{A} \mathbf{y}$, $\bar{\mathbf{y}} = \bar{\alpha} \mathbf{A}^{T} \mathbf{x}$, $\bar{\mathbf{A}} = \bar{\alpha} \mathbf{x} \mathbf{y}^{T}$
-\end{itemize}
+        \item Matrix-vector product $\mathbf{v} = \mathbf{A}^{T} \mathbf{x}$
+        \begin{itemize}
+            \item Forward: $\dot{\mathbf{v}} = \dot{\mathbf{A}}^{T} \mathbf{x} + \mathbf{A}^{T} \dot{\mathbf{x}}$
+            \item Reverse: $\bar{\mathbf{x}} = \mathbf{A} \bar{\mathbf{y}}$, $\bar{\mathbf{A}} = \mathbf{x} \bar{\mathbf{v}}^{T}$
+        \end{itemize}
+
+        \item Matrix inner product $\alpha = \mathbf{x}^{T} \mathbf{A} \mathbf{y}$
+        \begin{itemize}
+            \item Forward: $\dot{\alpha} = \dot{\mathbf{x}}^{T} \mathbf{A} \mathbf{y} + \mathbf{x}^{T} \dot{\mathbf{A}} \mathbf{y} + \mathbf{x}^{T} \mathbf{A} \dot{\mathbf{y}}$
+            \item Reverse: $\bar{\mathbf{x}} = \bar{\alpha} \mathbf{A} \mathbf{y}$, $\bar{\mathbf{y}} = \bar{\alpha} \mathbf{A}^{T} \mathbf{x}$, $\bar{\mathbf{A}} = \bar{\alpha} \mathbf{x} \mathbf{y}^{T}$
+        \end{itemize}
 
 
 % \item Inner product $\alpha = \mathbf{x}^{T} \mathbf{A} \mathbf{x}$
 % \item Symmetric inner product $\alpha = \mathbf{x}^{T} \mathbf{S} \mathbf{x}$
-\end{enumerate}
+    \end{enumerate}
 
-\section{Matrix-matrix operations}
 
-\begin{enumerate}
-\item Trace $\alpha = \text{tr}(\mathbf{A})$
-\begin{itemize}
-\item Forward $\dot{\alpha} = \text{tr}(\dot{\mathbf{A}})$
-\item Reverse $\bar{\mathbf{A}}_{ii} = \bar{\alpha}$
-\end{itemize}
+    \section{Matrix-matrix operations}\label{sec:matrix-matrix-operations}
 
-\item Symmetric trace $\alpha = \text{tr}(\mathbf{S})$
-\begin{itemize}
-\item Forward $\dot{\alpha} = \text{tr}(\dot{\mathbf{S}})$
-\item Reverse $\bar{\mathbf{S}}_{ii} = \bar{\alpha}$
-\end{itemize}
+    \begin{enumerate}
+        \item Trace $\alpha = \text{tr}(\mathbf{A})$
+        \begin{itemize}
+            \item Forward $\dot{\alpha} = \text{tr}(\dot{\mathbf{A}})$
+            \item Reverse $\bar{\mathbf{A}}_{ii} = \bar{\alpha}$
+        \end{itemize}
 
-\item Determinant $\alpha = \text{det}(\mathbf{A})$
-\item Symmetric determinant $\alpha = \text{det}(\mathbf{A})$
+        \item Symmetric trace $\alpha = \text{tr}(\mathbf{S})$
+        \begin{itemize}
+            \item Forward $\dot{\alpha} = \text{tr}(\dot{\mathbf{S}})$
+            \item Reverse $\bar{\mathbf{S}}_{ii} = \bar{\alpha}$
+        \end{itemize}
 
-\item Inverse $\mathbf{B} = \mathbf{A}^{-1}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{B}} = - \mathbf{A}^{-1} \dot{\mathbf{A}} \mathbf{A}^{-1}$
-\item Reverse $\bar{\mathbf{A}} = - \mathbf{A}^{-T} \bar{\mathbf{B}} \mathbf{A}^{-T}$
-\end{itemize}
+        \item Determinant $\alpha = \det(\mathbf{A})$
+        \item Symmetric determinant $\alpha = \det(\mathbf{A})$
 
-\item Symmetric Inverse $\mathbf{T} = \mathbf{S}^{-1}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{T}} = - \mathbf{S}^{-1} \dot{\mathbf{S}} \mathbf{S}^{-1}$
-\item Reverse $\bar{\mathbf{S}} = - \mathbf{S}^{-T} \bar{\mathbf{T}} \mathbf{S}^{-T}$
-\end{itemize}
+        \item Inverse $\mathbf{B} = \mathbf{A}^{-1}$
+        \begin{itemize}
+            \item Forward: $\dot{\mathbf{B}} = - \mathbf{A}^{-1} \dot{\mathbf{A}} \mathbf{A}^{-1}$
+            \item Reverse $\bar{\mathbf{A}} = - \mathbf{A}^{-T} \bar{\mathbf{B}} \mathbf{A}^{-T}$
+        \end{itemize}
 
-\item Symmetric part $\mathbf{S} = \alpha(\mathbf{A} + \mathbf{A}^{T})$
-\item Anti-symmetric part $\mathbf{B} = \alpha (\mathbf{A} - \mathbf{A}^{T})$
+        \item Symmetric Inverse $\mathbf{T} = \mathbf{S}^{-1}$
+        \begin{itemize}
+            \item Forward: $\dot{\mathbf{T}} = - \mathbf{S}^{-1} \dot{\mathbf{S}} \mathbf{S}^{-1}$
+            \item Reverse $\bar{\mathbf{S}} = - \mathbf{S}^{-T} \bar{\mathbf{T}} \mathbf{S}^{-T}$
+        \end{itemize}
 
-\item Matrix addition $\mathbf{C} = \mathbf{A} + \mathbf{B}$
-\begin{itemize}
-\item Forward: $\dot{\mathbf{C}} =  \dot{\mathbf{A}} + \dot{\mathbf{B}}$
-\item Reverse: $\bar{\mathbf{A}} =  \bar{\mathbf{C}}$, $\bar{\mathbf{B}} = \bar{\mathbf{C}}$
-\end{itemize}
+        \item Symmetric part $\mathbf{S} = \alpha(\mathbf{A} + \mathbf{A}^{T})$
+        \item Anti-symmetric part $\mathbf{B} = \alpha (\mathbf{A} - \mathbf{A}^{T})$
+
+        \item Matrix addition $\mathbf{C} = \mathbf{A} + \mathbf{B}$
+        \begin{itemize}
+            \item Forward: $\dot{\mathbf{C}} =  \dot{\mathbf{A}} + \dot{\mathbf{B}}$
+            \item Reverse: $\bar{\mathbf{A}} =  \bar{\mathbf{C}}$, $\bar{\mathbf{B}} = \bar{\mathbf{C}}$
+        \end{itemize}
 
 % tr(bar(C)^T dot(C)) = tr( B bar(C)^T dot(A)) + tr(bar(C)^{T} A dot(B))
 % bar(B)^{T} = bar(C)^{T} A => bar(B) = A^{T} bar(C)
 % bar(A)^{T} = B bar(C)^{T} => bar(A) = \bar{C} B^{T}
 
-\item Matrix-matrix product $\mathbf{C} = \mathbf{A} \mathbf{B}$
-\begin{itemize}
-\item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}} \mathbf{B} + \mathbf{A} \dot{\mathbf{B}}$
-\item Reverse $\bar{\mathbf{A}} = \bar{\mathbf{C}} \mathbf{B}^{T}$,  $\bar{\mathbf{B}} = \mathbf{A}^{T} \bar{\mathbf{C}}$,
-\end{itemize}
+        \item Matrix-matrix product $\mathbf{C} = \mathbf{A} \mathbf{B}$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}} \mathbf{B} + \mathbf{A} \dot{\mathbf{B}}$
+            \item Reverse $\bar{\mathbf{A}} = \bar{\mathbf{C}} \mathbf{B}^{T}$,  $\bar{\mathbf{B}} = \mathbf{A}^{T} \bar{\mathbf{C}}$,
+        \end{itemize}
 
-\item Matrix-matrix product $\mathbf{C} = \mathbf{A}^{T} \mathbf{B}$
-\begin{itemize}
-\item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}}^{T} \mathbf{B} + \mathbf{A}^{T} \dot{\mathbf{B}}$
-\item Reverse $\bar{\mathbf{A}} = \mathbf{B} \bar{\mathbf{C}}^{T}$,  $\bar{\mathbf{B}} = \mathbf{A} \bar{\mathbf{C}}$,
-\end{itemize}
+        \item Matrix-matrix product $\mathbf{C} = \mathbf{A}^{T} \mathbf{B}$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}}^{T} \mathbf{B} + \mathbf{A}^{T} \dot{\mathbf{B}}$
+            \item Reverse $\bar{\mathbf{A}} = \mathbf{B} \bar{\mathbf{C}}^{T}$,  $\bar{\mathbf{B}} = \mathbf{A} \bar{\mathbf{C}}$,
+        \end{itemize}
 
-\item Matrix-matrix product $\mathbf{C} = \mathbf{A} \mathbf{B}^{T}$
-\begin{itemize}
-\item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}} \mathbf{B}^{T} + \mathbf{A} \dot{\mathbf{B}}^{T}$
-\item Reverse $\bar{\mathbf{A}} = \bar{\mathbf{C}} \mathbf{B}$, $\bar{\mathbf{B}} = \bar{\mathbf{C}}^{T} \mathbf{A}$
-\end{itemize}
+        \item Matrix-matrix product $\mathbf{C} = \mathbf{A} \mathbf{B}^{T}$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}} \mathbf{B}^{T} + \mathbf{A} \dot{\mathbf{B}}^{T}$
+            \item Reverse $\bar{\mathbf{A}} = \bar{\mathbf{C}} \mathbf{B}$, $\bar{\mathbf{B}} = \bar{\mathbf{C}}^{T} \mathbf{A}$
+        \end{itemize}
 
-\item Matrix-matrix product $\mathbf{C} = \mathbf{A}^{T} \mathbf{B}^{T}$
-\begin{itemize}
-\item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}}^{T} \mathbf{B}^{T} + \mathbf{A}^{T} \dot{\mathbf{B}}^{T}$
-\item Reverse $\bar{\mathbf{A}} = \mathbf{B}^{T} \bar{\mathbf{C}}^{T} $, $\bar{\mathbf{B}} = \bar{\mathbf{C}}^{T} \mathbf{A}^{T}$
-\end{itemize}
+        \item Matrix-matrix product $\mathbf{C} = \mathbf{A}^{T} \mathbf{B}^{T}$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{C}} = \dot{\mathbf{A}}^{T} \mathbf{B}^{T} + \mathbf{A}^{T} \dot{\mathbf{B}}^{T}$
+            \item Reverse $\bar{\mathbf{A}} = \mathbf{B}^{T} \bar{\mathbf{C}}^{T} $, $\bar{\mathbf{B}} = \bar{\mathbf{C}}^{T} \mathbf{A}^{T}$
+        \end{itemize}
 
-\item Linear Lagrange-Green strain $\mathbf{E} = \frac{1}{2} \left( \mathbf{U} + \mathbf{U}^{T} \right)$
-\begin{itemize}
-\item Forward $\dot{\mathbf{E}} = \frac{1}{2} \left( \dot{\mathbf{U}} + \dot{\mathbf{U}}^{T} \right)$
-\item Reverse $\bar{\mathbf{U}} = \bar{\mathbf{E}}$
-\end{itemize}
+        \item Linear Lagrange-Green strain $\mathbf{E} = \frac{1}{2} \left( \mathbf{U} + \mathbf{U}^{T} \right)$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{E}} = \frac{1}{2} \left( \dot{\mathbf{U}} + \dot{\mathbf{U}}^{T} \right)$
+            \item Reverse $\bar{\mathbf{U}} = \bar{\mathbf{E}}$
+        \end{itemize}
 
-\item Lagrange-Green strain $\mathbf{E} = \frac{1}{2} \left( \mathbf{U} + \mathbf{U}^{T} + \mathbf{U}^{T} \mathbf{U} \right)$
-\begin{itemize}
-\item Forward $\dot{\mathbf{E}} = \frac{1}{2} \left( \dot{\mathbf{U}} + \dot{\mathbf{U}}^{T} + \dot{\mathbf{U}}^{T} \mathbf{U} + \mathbf{U}^{T} \dot{\mathbf{U}} \right)$
-\item Reverse $\bar{\mathbf{U}} = (\mathbf{I} + \mathbf{U}) \bar{\mathbf{E}}$
-\end{itemize}
+        \item Lagrange-Green strain $\mathbf{E} = \frac{1}{2} \left( \mathbf{U} + \mathbf{U}^{T} + \mathbf{U}^{T} \mathbf{U} \right)$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{E}} = \frac{1}{2} \left( \dot{\mathbf{U}} + \dot{\mathbf{U}}^{T} + \dot{\mathbf{U}}^{T} \mathbf{U} + \mathbf{U}^{T} \dot{\mathbf{U}} \right)$
+            \item Reverse $\bar{\mathbf{U}} = (\mathbf{I} + \mathbf{U}) \bar{\mathbf{E}}$
+        \end{itemize}
 
-\item Isotropic constitutive $\mathbf{S} = 2 \mu \mathbf{E} + \lambda \text{tr}(\mathbf{E}) \mathbf{I}$
-\begin{itemize}
-\item Forward $\dot{\mathbf{S}} = 2 \mu \dot{\mathbf{E}} + \lambda \text{tr}(\dot{\mathbf{E}}) \mathbf{I}$
-\item Reverse $\bar{\mathbf{E}} = 2 \mu \bar{\mathbf{S}} + \lambda \text{tr}(\bar{\mathbf{S}}) \mathbf{I}$
-\end{itemize}
+        \item Isotropic constitutive $\mathbf{S} = 2 \mu \mathbf{E} + \lambda \text{tr}(\mathbf{E}) \mathbf{I}$
+        \begin{itemize}
+            \item Forward $\dot{\mathbf{S}} = 2 \mu \dot{\mathbf{E}} + \lambda \text{tr}(\dot{\mathbf{E}}) \mathbf{I}$
+            \item Reverse $\bar{\mathbf{E}} = 2 \mu \bar{\mathbf{S}} + \lambda \text{tr}(\bar{\mathbf{S}}) \mathbf{I}$
+        \end{itemize}
 
-\end{enumerate}
+    \end{enumerate}
 
 \end{document}

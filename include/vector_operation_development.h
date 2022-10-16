@@ -80,10 +80,10 @@ namespace A2D {
             const Vec<T, 3>& x = xObj.value();
             const Vec<T, 3>& xb = xObj.bvalue();
             const T& n = normObj.value;
-//            output:
-            T& nb = normObj.bvalue;
-//            operations:
-            nb = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
+// //            output:
+//            T& nb = normObj.bvalue;
+// //            operations:
+//            nb = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
             normObj.bvalue = Vec3DotCore<T, Vec<T, 3>>(x, xb) / n;
         }
 
