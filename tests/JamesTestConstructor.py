@@ -254,9 +254,9 @@ input_data_type = Dict[str, Tuple[Any, ADVarType]]  # {<var_name>: (<value>, <va
 operation_type = Callable[..., Tuple[numpy.ndarray, ...]]
 
 
-class TestFunction:
+class TestADFunction:
     """\
-TestFunction: A representation of an overloaded operation to be tested.
+TestADFunction: A representation of an overloaded operation to be tested.
 
 operation_name: the name of the overloaded operation within the A2D C++ code.  The operation should return an \
 instance of the resulting A2D class; all outputs or modified objects should be passed by reference to the operation.
@@ -307,7 +307,7 @@ inputs are assumed to be constants.  If left undefined, then the power set of va
         var_names = {var_name for var_name, var_type in itertools.chain(self.inputs, self.outputs)}
         if len(var_names) != (len(self.inputs) + len(self.outputs)):
             raise VariableNameOverloadError(f'Overlap detected in variable names for\n'
-                                            f'TestFunction({self.operation_name}, ...):\n'
+                                            f'TestADFunction({self.operation_name}, ...):\n'
                                             f'\tinputs = {self.inputs}\n'
                                             f'\toutputs = {self.outputs}\n')
 
@@ -319,7 +319,7 @@ inputs are assumed to be constants.  If left undefined, then the power set of va
             frozen_variants = set(self.variants)
             if bool(expected_variants.symmetric_difference(frozen_variants)):
                 print(f"WARNING: incomplete or unexpected set of function variants prescribed to:\n"
-                      f"\t\tTestFunction({self.operation_name}, ...)\n"
+                      f"\t\tTestADFunction({self.operation_name}, ...)\n"
                       f"\tGiven: {tuple(map(set, frozen_variants))}\n"
                       f"\tExpected: {tuple(map(set, expected_variants))}\n")
                 pass
@@ -341,8 +341,8 @@ inputs are assumed to be constants.  If left undefined, then the power set of va
         # Deal with variadic arguments
         if operation_arg_spec.varargs is not None:
             # TODO
-            w = FutureWarning(f'from TestFunction({self.operation_name}, ...)'
-                              f'\n\tTestFunction.__inspect_operation__ is not yet capable of inspecting variadic'
+            w = FutureWarning(f'from TestADFunction({self.operation_name}, ...)'
+                              f'\n\tTestADFunction.__inspect_operation__ is not yet capable of inspecting variadic'
                               f'\n\targuments in the "operation" function.  Dependable inspection and agreement'
                               f'\n\tchecking is unlikely.')
             warnings.warn(w)
@@ -351,8 +351,8 @@ inputs are assumed to be constants.  If left undefined, then the power set of va
         # Deal with variadic keyword arguments
         if operation_arg_spec.varkw is not None:
             # TODO
-            w = FutureWarning(f'from TestFunction({self.operation_name}, ...)'
-                              f'\n\tTestFunction.__inspect_operation__ is not yet capable of inspecting variadic'
+            w = FutureWarning(f'from TestADFunction({self.operation_name}, ...)'
+                              f'\n\tTestADFunction.__inspect_operation__ is not yet capable of inspecting variadic'
                               f'\n\tkeyword arguments in the "operation" function.  Dependable inspection and'
                               f'\n\tagreement checking is unlikely.')
             warnings.warn(w)
@@ -404,13 +404,14 @@ inputs are assumed to be constants.  If left undefined, then the power set of va
 
     def evaluate_input_derivatives_at(self, input_data: input_data_type,
                                       non_constant_inputs: non_constant_inputs_type):
-        output_names = next(zip(*self.outputs))  # TODO: this can be made into static property of the TestFunction class
+        output_names = next(
+            zip(*self.outputs))  # TODO: this can be made into static property of the TestADFunction class
         dimension_vectors = {
             var_name: [numpy.reshape(dim, numpy.shape(input_data[var_name][0]))
                        for dim in numpy.identity(numpy.size(input_data[var_name][0]))]
             for var_name, var_type in self.inputs
             if var_name in non_constant_inputs
-        }  # TODO: this can be made into static property of the TestFunction class
+        }  # TODO: this can be made into static property of the TestADFunction class
         partial_derivatives = {
             candidate_var_name: [
                 {output_name: numpy.imag(x) / self.__h__
@@ -806,7 +807,7 @@ protected:
 
 class TestConstructor:
     """\
-TestConstructor: An object that constructs a full test suite for functions defined by TestFunction objects.  Use the \
+TestConstructor: An object that constructs a full test suite for functions defined by TestADFunction objects.  Use the \
 .construct method to write the test file.  The test must be manually added to the test CMakeLists.txt file.
 
 name: the name of the test file to be constructed.  The convention is to include all tests for objects in a \
@@ -815,22 +816,22 @@ name: the name of the test file to be constructed.  The convention is to include
 packages: packages to include in addition to those automatically included for all test files.  Automatically included \
 packages are "gtest/gtest.h", "a2dobjs.h", "a2dtypes.h", and "test_commons.h"
 
-var_types: a list of all VarType and ADVarType objects directly or indirectly used by the TestFunction objects.
+var_types: a list of all VarType and ADVarType objects directly or indirectly used by the TestADFunction objects.
 
-test_functions: a list of TestFunction objects describing the overloaded operations to be tested.
+test_functions: a list of TestADFunction objects describing the overloaded operations to be tested.
 """
 
     name: str
     packages: List[str]
     var_types: List[Union[VarType, ADVarType]]
-    test_functions: List[TestFunction]
+    test_functions: List[TestADFunction]
 
     # TODO: modify this to be able to generate multiple values for all tests at once
     #  This should be accomplished by creating x01, x02, ..., xNN, xb01, xb02, ...
     #  then copying the code for the various test functions with these modifications
 
     def __init__(self, name: str, packages: List[str], var_types: List[Union[VarType, ADVarType]],
-                 test_functions: List[TestFunction]):
+                 test_functions: List[TestADFunction]):
         # TODO: add inspection for use of all items in all packages
         self.name = name
         # TODO: format name more strictly
@@ -889,7 +890,7 @@ test_functions: a list of TestFunction objects describing the overloaded operati
         })
         return data  # {<var_name>: (<value>, <var_type>), ...}
 
-    def _test_function_(self, input_data: input_data_type, test_function: TestFunction):
+    def _test_function_(self, input_data: input_data_type, test_function: TestADFunction):
         separator_string = '\n    '
         overloaded_data = []  # note: must combine overloaded_data with input_data to pass if implementing this
         return f"""
@@ -1118,11 +1119,11 @@ if __name__ == '__main__0':
     advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', '.value()', '.bvalue()', vec_t)
     adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', '.value', '.bvalue', t_t, (0, 0))
 
-    tf = TestFunction("Vec3Cross",
-                      inputs=[('x', advec_t), ('y', advec_t)],
-                      outputs=[('v', advec_t), ],
-                      operation=lambda x, y: (numpy.cross(x, y),),
-                      variants=[{'x', 'y'}, set()])
+    tf = TestADFunction("Vec3Cross",
+                        inputs=[('x', advec_t), ('y', advec_t)],
+                        outputs=[('v', advec_t), ],
+                        operation=lambda x, y: (numpy.cross(x, y),),
+                        variants=[{'x', 'y'}, set()])
 
     tc = TestConstructor("test", ["a2dvecops3d.h"], [t_t, i_t, vec_t, advec_t, adscalar_t],
                          [tf])
@@ -1200,7 +1201,7 @@ if __name__ == '__main__0':
 #     advec_t = ADVarType('ADVec_t', 'ADVec', 'A2D::ADVec<Vec_t>', vec_t)
 #     adscalar_t = ADVarType('ADScalar_t', 'ADScalar', 'A2D::ADScalar<T>', t_t)
 #
-#     tf = TestFunction("Vec3Cross", lambda x, y: (numpy.cross(x, y),),
+#     tf = TestADFunction("Vec3Cross", lambda x, y: (numpy.cross(x, y),),
 #                       inputs=[('x', advec_t), ('y', advec_t)],
 #                       outputs=[('v', advec_t), ],
 #                       variants=[{'x', 'y'}, set()])
@@ -1278,34 +1279,34 @@ if __name__ == '__main__':
     admat_t = ADVarType('ADMat_t', 'ADMat', 'A2D::ADMat<Mat_t>', '.value()', '.bvalue()', mat_t)
 
     tfs = [
-        TestFunction("Vec3Norm",
-                     inputs=[('x', advec_t), ],
-                     outputs=[('a', adscalar_t), ],
-                     operation=lambda x: (numpy.array([numpy.dot(x, x) ** 0.5]),),
-                     variants=[{'x'}, set()]),
-        TestFunction("Vec3Scale",
-                     inputs=[('x', advec_t),
-                             ('a', adscalar_t), ],
-                     outputs=[('v', advec_t), ],
-                     operation=lambda x, a: (numpy.multiply(a, x),),
-                     variants=[{'x', 'a'}, {'x'}, {'a'}, set()]),
-        TestFunction("Vec3Dot",
-                     inputs=[('x', advec_t),
-                             ('y', advec_t), ],
-                     outputs=[('a', adscalar_t), ],
-                     operation=lambda x, y: (numpy.array([numpy.dot(x, y)]),),
-                     variants=[{'x', 'y'}, {'x'}, set()]),
-        TestFunction("Vec3Normalize",
-                     inputs=[('x', advec_t), ],
-                     outputs=[('v', advec_t), ],
-                     operation=lambda x: (numpy.multiply(1 / (numpy.dot(x, x) ** 0.5), x),),
-                     variants=[{'x'}, set()]),
-        TestFunction("Vec3ScaleSymmetricOuterProduct",
-                     inputs=[('a', adscalar_t),
-                             ('x', advec_t), ],
-                     outputs=[('S', admat_t), ],
-                     operation=lambda a, x: (numpy.multiply(a, numpy.outer(x, x)).flatten(),),
-                     variants=[{'a', 'x'}, {'a'}, {'x'}, set()]),
+        TestADFunction("Vec3Norm",
+                       inputs=[('x', advec_t), ],
+                       outputs=[('a', adscalar_t), ],
+                       operation=lambda x: (numpy.array([numpy.dot(x, x) ** 0.5]),),
+                       variants=[{'x'}, set()]),
+        TestADFunction("Vec3Scale",
+                       inputs=[('x', advec_t),
+                               ('a', adscalar_t), ],
+                       outputs=[('v', advec_t), ],
+                       operation=lambda x, a: (numpy.multiply(a, x),),
+                       variants=[{'x', 'a'}, {'x'}, {'a'}, set()]),
+        TestADFunction("Vec3Dot",
+                       inputs=[('x', advec_t),
+                               ('y', advec_t), ],
+                       outputs=[('a', adscalar_t), ],
+                       operation=lambda x, y: (numpy.array([numpy.dot(x, y)]),),
+                       variants=[{'x', 'y'}, {'x'}, set()]),
+        TestADFunction("Vec3Normalize",
+                       inputs=[('x', advec_t), ],
+                       outputs=[('v', advec_t), ],
+                       operation=lambda x: (numpy.multiply(1 / (numpy.dot(x, x) ** 0.5), x),),
+                       variants=[{'x'}, set()]),
+        TestADFunction("Vec3ScaleSymmetricOuterProduct",
+                       inputs=[('a', adscalar_t),
+                               ('x', advec_t), ],
+                       outputs=[('S', admat_t), ],
+                       operation=lambda a, x: (numpy.multiply(a, numpy.outer(x, x)).flatten(),),
+                       variants=[{'a', 'x'}, {'a'}, {'x'}, set()]),
     ]
 
     tc = TestConstructor("vector_operation_development", ["vector_operation_development.h"],

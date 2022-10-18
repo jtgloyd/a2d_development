@@ -449,9 +449,9 @@ namespace A2D {
     };
 
     template <typename T>
-    inline ADVec3NormalizeExpr<T> Vec3Normalize(ADVec<Vec<T, 3>>& xObj,
-                                                ADVec<Vec<T, 3>>& vObj) {
-        return ADVec3NormalizeExpr<T>(xObj, vObj);
+    inline ADVec3NormalizeExpr<T> Vec3Normalize(ADVec<Vec<T, 3>>& x,
+                                                ADVec<Vec<T, 3>>& v) {
+        return ADVec3NormalizeExpr<T>(x, v);
     }
 
 

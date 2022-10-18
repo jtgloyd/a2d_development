@@ -4,6 +4,21 @@
 namespace A2D {
 
     /**
+     * @brief vector addition:  v = x + y
+     * @param x    :  3-Vector to add
+     * @param y    :  3-Vector to add
+     * @param v    :  3-Vector destination
+     */
+    template <typename T, class VecType>
+    inline void Vec3AddCore(const VecType& x,
+                            const VecType& y,
+                            VecType& v) {
+        v(0) = x(0) + y(0);
+        v(1) = x(1) + y(1);
+        v(2) = x(2) + y(2);
+    }
+
+    /**
      * @brief scalar-vector multiply and add:  v = a * x + b * y
      * @param alpha:  Scalar to multiply x
      * @param x    :  3-Vector
@@ -51,9 +66,9 @@ namespace A2D {
      * @param v    :  3-Vector to add scaled vector
      */
     template <typename T, class VecType>
-    inline void Vec3ScaleThenAddCore(const T alpha,
-                                     const VecType& x,
-                                     VecType& v) {
+    inline void Vec3ScaleAndAddCore(const T alpha,
+                                    const VecType& x,
+                                    VecType& v) {
         v(0) += alpha * x(0);
         v(1) += alpha * x(1);
         v(2) += alpha * x(2);
