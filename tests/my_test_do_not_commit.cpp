@@ -2,7 +2,7 @@
 // Created by James on 10/25/2022.
 //
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <iostream>
 #include "a2dtypes.h"
 #include "shell_development.h"
@@ -204,77 +204,32 @@ int main() {
                             n1_2,
                             n1_3,
                             n1_4);
-  /*A2D::Vec<double, 3> position_vec;
-  x.position(0, 0, 0, position_vec);
-  print_vector(position_vec);*/
   std::cout << x1.strain_energy.value << std::endl << std::endl;
 
-//  const double initial_position2_1_data[3] = {0, 0, 0};
-//  const double initial_position2_2_data[3] = {0, 1, 0};
-//  const double initial_position2_3_data[3] = {1, 0, 0};
-//  const double initial_position2_4_data[3] = {1, 1, 0};
-//  A2D::Vec<double, 3> initial_position2_1(initial_position2_1_data);
-//  A2D::Vec<double, 3> initial_position2_2(initial_position2_2_data);
-//  A2D::Vec<double, 3> initial_position2_3(initial_position2_3_data);
-//  A2D::Vec<double, 3> initial_position2_4(initial_position2_4_data);
-//  const double initial_shell_director2_data[3] = {0, 0, 1};
-//  A2D::Vec<double, 3> initial_shell_director2(initial_shell_director2_data);
-//
-//  A2D::ShellNodeMITC<24, double> n2_1{initial_position2_1, initial_shell_director2};
-//  A2D::ShellNodeMITC<24, double> n2_2{initial_position2_2, initial_shell_director2};
-//  A2D::ShellNodeMITC<24, double> n2_3{initial_position2_3, initial_shell_director2};
-//  A2D::ShellNodeMITC<24, double> n2_4{initial_position2_4, initial_shell_director2};
   A2D::ShellNodeMITC<24, double> n2_1{n1_1};
   A2D::ShellNodeMITC<24, double> n2_2{n1_2};
   A2D::ShellNodeMITC<24, double> n2_3{n1_3};
   A2D::ShellNodeMITC<24, double> n2_4{n1_4};
   double move_amount[3] = {2.3, 1.2, 3.9};
   for (int i = 0; i < 3; ++i) {
-    n2_1.position(i) += move_amount[i];
-    n2_2.position(i) += move_amount[i];
-    n2_3.position(i) += move_amount[i];
-    n2_4.position(i) += move_amount[i];
+    n2_1.displacement.value()(i) += move_amount[i];
+    n2_2.displacement.value()(i) += move_amount[i];
+    n2_3.displacement.value()(i) += move_amount[i];
+    n2_4.displacement.value()(i) += move_amount[i];
   }
   A2D::ShellElementMITC4 x2(n2_1, n2_2, n2_3, n2_4);
   std::cout << x2.strain_energy.value << std::endl << std::endl;
-//  print_vector(n2_1.displacement.value());
-//  print_vector(n2_2.displacement.value());
-//  print_vector(n2_3.displacement.value());
-//  print_vector(n2_4.displacement.value());
-//  print_vector(n2_1.position);
-//  print_vector(n2_2.position);
-//  print_vector(n2_3.position);
-//  print_vector(n2_4.position);
-//  print_vector(n1_1.position);
-//  print_vector(n1_2.position);
-//  print_vector(n1_3.position);
-//  print_vector(n1_4.position);
 
-//  const double initial_position3_1_data[3] = {0, 0, 0};
-//  const double initial_position3_2_data[3] = {0, 1, 0};
-//  const double initial_position3_3_data[3] = {1, 0, 0};
-//  const double initial_position3_4_data[3] = {1, 1, 0};
-//  A2D::Vec<double, 3> initial_position3_1(initial_position3_1_data);
-//  A2D::Vec<double, 3> initial_position3_2(initial_position3_2_data);
-//  A2D::Vec<double, 3> initial_position3_3(initial_position3_3_data);
-//  A2D::Vec<double, 3> initial_position3_4(initial_position3_4_data);
-//  const double initial_shell_director3_data[3] = {0, 0, 1};
-//  A2D::Vec<double, 3> initial_shell_director3(initial_shell_director3_data);
-//
-//  A2D::ShellNodeMITC<24, double> n3_1{initial_position3_1, initial_shell_director3};
-//  A2D::ShellNodeMITC<24, double> n3_2{initial_position3_2, initial_shell_director3};
-//  A2D::ShellNodeMITC<24, double> n3_3{initial_position3_3, initial_shell_director3};
-//  A2D::ShellNodeMITC<24, double> n3_4{initial_position3_4, initial_shell_director3};
   A2D::ShellNodeMITC<24, double> n3_1{n1_1};
   A2D::ShellNodeMITC<24, double> n3_2{n1_2};
   A2D::ShellNodeMITC<24, double> n3_3{n1_3};
   A2D::ShellNodeMITC<24, double> n3_4{n1_4};
   double move_amount3[3] = {-2.3, 51.2, -0.9};
   for (int i = 0; i < 3; ++i) {
-    n3_1.position(i) += move_amount3[i];
-    n3_2.position(i) += move_amount3[i];
-    n3_3.position(i) += move_amount3[i];
-    n3_4.position(i) += move_amount3[i];
+    n3_1.displacement.value()(i) += move_amount3[i];
+    n3_2.displacement.value()(i) += move_amount3[i];
+    n3_3.displacement.value()(i) += move_amount3[i];
+    n3_4.displacement.value()(i) += move_amount3[i];
   }
   A2D::ShellElementMITC4 x3(n3_1,
                             n3_2,
@@ -282,31 +237,16 @@ int main() {
                             n3_4);
   std::cout << x3.strain_energy.value << std::endl << std::endl;
 
-//  const double initial_position4_1_data[3] = {0, 0, 0};
-//  const double initial_position4_2_data[3] = {0, 1, 0};
-//  const double initial_position4_3_data[3] = {1, 0, 0};
-//  const double initial_position4_4_data[3] = {1, 1, 0};
-//  A2D::Vec<double, 3> initial_position4_1(initial_position4_1_data);
-//  A2D::Vec<double, 3> initial_position4_2(initial_position4_2_data);
-//  A2D::Vec<double, 3> initial_position4_3(initial_position4_3_data);
-//  A2D::Vec<double, 3> initial_position4_4(initial_position4_4_data);
-//  const double initial_shell_director4_data[3] = {0, 0, 1};
-//  A2D::Vec<double, 3> initial_shell_director4(initial_shell_director4_data);
-//
-//  A2D::ShellNodeMITC<24, double> n4_1{initial_position4_1, initial_shell_director4};
-//  A2D::ShellNodeMITC<24, double> n4_2{initial_position4_2, initial_shell_director4};
-//  A2D::ShellNodeMITC<24, double> n4_3{initial_position4_3, initial_shell_director4};
-//  A2D::ShellNodeMITC<24, double> n4_4{initial_position4_4, initial_shell_director4};
   A2D::ShellNodeMITC<24, double> n4_1{n1_1};
   A2D::ShellNodeMITC<24, double> n4_2{n1_2};
   A2D::ShellNodeMITC<24, double> n4_3{n1_3};
   A2D::ShellNodeMITC<24, double> n4_4{n1_4};
   double move_amount4[3] = {7.53, -6.45, -9.7};
   for (int i = 0; i < 3; ++i) {
-    n4_1.position(i) += move_amount4[i];
-    n4_2.position(i) += move_amount4[i];
-    n4_3.position(i) += move_amount4[i];
-    n4_4.position(i) += move_amount4[i];
+    n4_1.displacement.value()(i) += move_amount4[i];
+    n4_2.displacement.value()(i) += move_amount4[i];
+    n4_3.displacement.value()(i) += move_amount4[i];
+    n4_4.displacement.value()(i) += move_amount4[i];
   }
   A2D::ShellElementMITC4 x4(n4_1,
                             n4_2,
