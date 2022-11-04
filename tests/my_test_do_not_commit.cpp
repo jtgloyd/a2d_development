@@ -2,7 +2,7 @@
 // Created by James on 10/25/2022.
 //
 
-//#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include "a2dtypes.h"
 #include "shell_development.h"
@@ -176,11 +176,22 @@ int main() {
     std::cout << std::endl;
   }*/
 
+  /*/// Test in-place axpy
+  const double u_data[3] = {7, 11, 13};
+  A2D::Vec<double, 3> u{u_data};
+  const double v_data[3] = {2, 3, 5};
+  A2D::Vec<double, 3> v{v_data};
+  print_vector(u);
+  print_vector(v);
+  A2D::VecAXPYCore<double>(17, u, v, v);
+  print_vector(u);
+  print_vector(v);*/
+
   /// Test shell node constructor
   const double initial_position1_data[3] = {0, 0, 0};
-  const double initial_position2_data[3] = {0, 1, 0};
-  const double initial_position3_data[3] = {1, 0, 0};
-  const double initial_position4_data[3] = {1, 1, 0};
+  const double initial_position2_data[3] = {1, 0, 0};
+  const double initial_position3_data[3] = {1, 1, 1};
+  const double initial_position4_data[3] = {0, 1, 0};
   A2D::Vec<double, 3> initial_position1(initial_position1_data);
   A2D::Vec<double, 3> initial_position2(initial_position2_data);
   A2D::Vec<double, 3> initial_position3(initial_position3_data);
@@ -193,12 +204,12 @@ int main() {
   A2D::ShellNodeMITC<24, double> n1_3{initial_position3, initial_shell_director};
   A2D::ShellNodeMITC<24, double> n1_4{initial_position4, initial_shell_director};
 
-  n1_1.displacement.value()(0) += 0.01;
-  n1_1.displacement.value()(1) += 0.01;
-  n1_1.displacement.value()(2) += 0.01;
-  n1_3.displacement.value()(0) += 0.01;
-  n1_3.displacement.value()(1) += 0.01;
-  n1_3.displacement.value()(2) += 0.01;
+  n1_1.displacement.value()(0) += 0.1;
+  n1_1.displacement.value()(1) += 0.1;
+//  n1_1.displacement.value()(2) += 0.1;
+//  n1_3.displacement.value()(0) -= 0.03;
+//  n1_3.displacement.value()(1) -= 0.03;
+  n1_3.displacement.value()(2) -= 0.03;
 
   A2D::ShellElementMITC4 x1(n1_1,
                             n1_2,
@@ -206,7 +217,7 @@ int main() {
                             n1_4);
   std::cout << x1.strain_energy.value << std::endl << std::endl;
 
-  A2D::ShellNodeMITC<24, double> n2_1{n1_1};
+  /*A2D::ShellNodeMITC<24, double> n2_1{n1_1};
   A2D::ShellNodeMITC<24, double> n2_2{n1_2};
   A2D::ShellNodeMITC<24, double> n2_3{n1_3};
   A2D::ShellNodeMITC<24, double> n2_4{n1_4};
@@ -252,96 +263,114 @@ int main() {
                             n4_2,
                             n4_3,
                             n4_4);
-  std::cout << x4.strain_energy.value << std::endl << std::endl;
+  std::cout << x4.strain_energy.value << std::endl << std::endl;*/
 
-//  x.strain_energy.bvalue = 1;
-//  x.reverse();
-//  std::cout << std::endl;
-//  print_vector(x.node1.displacement.bvalue());
-//  print_vector(x.node1.rotation.bvalue());
-//  print_vector(x.node2.displacement.bvalue());
-//  print_vector(x.node2.rotation.bvalue());
-//  print_vector(x.node3.displacement.bvalue());
-//  print_vector(x.node3.rotation.bvalue());
-//  print_vector(x.node4.displacement.bvalue());
-//  print_vector(x.node4.rotation.bvalue());
-//  std::cout << std::endl;
-//
-//  /* Zero out p values: */
+  x1.strain_energy.bvalue = 1;
+  x1.reverse();
+  std::cout << std::endl;
+  print_vector(x1.node1.displacement.bvalue());
+  print_vector(x1.node1.rotation.bvalue());
+  print_vector(x1.node2.displacement.bvalue());
+  print_vector(x1.node2.rotation.bvalue());
+  print_vector(x1.node3.displacement.bvalue());
+  print_vector(x1.node3.rotation.bvalue());
+  print_vector(x1.node4.displacement.bvalue());
+  print_vector(x1.node4.rotation.bvalue());
+  std::cout << std::endl;
+
+  /* Zero out p values: */
+  for (int i = 0; i < 24; ++i) {
+    x1.node1.displacement.pvalue(i).zero();
+    x1.node1.rotation.pvalue(i).zero();
+    x1.node2.displacement.pvalue(i).zero();
+    x1.node2.rotation.pvalue(i).zero();
+    x1.node3.displacement.pvalue(i).zero();
+    x1.node3.rotation.pvalue(i).zero();
+    x1.node4.displacement.pvalue(i).zero();
+    x1.node4.rotation.pvalue(i).zero();
+  }
+  /* Assign unit p values to degrees of freedom: */
+  x1.node1.displacement.pvalue(0)(0) = 1;
+  x1.node1.displacement.pvalue(1)(1) = 1;
+  x1.node1.displacement.pvalue(2)(2) = 1;
+
+  x1.node2.displacement.pvalue(6)(0) = 1;
+  x1.node2.displacement.pvalue(7)(1) = 1;
+  x1.node2.displacement.pvalue(8)(2) = 1;
+
+  x1.node3.displacement.pvalue(12)(0) = 1;
+  x1.node3.displacement.pvalue(13)(1) = 1;
+  x1.node3.displacement.pvalue(14)(2) = 1;
+
+  x1.node4.displacement.pvalue(18)(0) = 1;
+  x1.node4.displacement.pvalue(19)(1) = 1;
+  x1.node4.displacement.pvalue(20)(2) = 1;
+
+  /* Rotations:*/
+  x1.node1.rotation.pvalue(3)(0) = 1;
+  x1.node1.rotation.pvalue(4)(1) = 1;
+  x1.node1.rotation.pvalue(5)(2) = 1;
+
+  x1.node2.rotation.pvalue(9)(0) = 1;
+  x1.node2.rotation.pvalue(10)(1) = 1;
+  x1.node2.rotation.pvalue(11)(2) = 1;
+
+  x1.node3.rotation.pvalue(15)(0) = 1;
+  x1.node3.rotation.pvalue(16)(1) = 1;
+  x1.node3.rotation.pvalue(17)(2) = 1;
+
+  x1.node4.rotation.pvalue(21)(0) = 1;
+  x1.node4.rotation.pvalue(22)(1) = 1;
+  x1.node4.rotation.pvalue(23)(2) = 1;
+
+  /* forward and reverse passes */
+  x1.hforward();
 //  for (int i = 0; i < 24; ++i) {
-//    x.node1.displacement.pvalue(i).zero();
-//    x.node1.rotation.pvalue(i).zero();
-//    x.node2.displacement.pvalue(i).zero();
-//    x.node2.rotation.pvalue(i).zero();
-//    x.node3.displacement.pvalue(i).zero();
-//    x.node3.rotation.pvalue(i).zero();
-//    x.node4.displacement.pvalue(i).zero();
-//    x.node4.rotation.pvalue(i).zero();
-//  }
-//  /* Assign unit p values to degrees of freedom: */
-//  x.node1.displacement.pvalue(0)(0) = 1;
-//  x.node1.displacement.pvalue(1)(1) = 1;
-//  x.node1.displacement.pvalue(2)(2) = 1;
-//  x.node1.rotation.pvalue(3)(0) = 1;
-//  x.node1.rotation.pvalue(4)(1) = 1;
-//  x.node1.rotation.pvalue(5)(2) = 1;
-//  x.node2.displacement.pvalue(6)(0) = 1;
-//  x.node2.displacement.pvalue(7)(1) = 1;
-//  x.node2.displacement.pvalue(8)(2) = 1;
-//  x.node2.rotation.pvalue(9)(0) = 1;
-//  x.node2.rotation.pvalue(10)(1) = 1;
-//  x.node2.rotation.pvalue(11)(2) = 1;
-//  x.node3.displacement.pvalue(12)(0) = 1;
-//  x.node3.displacement.pvalue(13)(1) = 1;
-//  x.node3.displacement.pvalue(14)(2) = 1;
-//  x.node3.rotation.pvalue(15)(0) = 1;
-//  x.node3.rotation.pvalue(16)(1) = 1;
-//  x.node3.rotation.pvalue(17)(2) = 1;
-//  x.node4.displacement.pvalue(18)(0) = 1;
-//  x.node4.displacement.pvalue(19)(1) = 1;
-//  x.node4.displacement.pvalue(20)(2) = 1;
-//  x.node4.rotation.pvalue(21)(0) = 1;
-//  x.node4.rotation.pvalue(22)(1) = 1;
-//  x.node4.rotation.pvalue(23)(2) = 1;
-//  /* forward and reverse passes */
-//  x.hforward();
-//  for (int i = 0; i < 24; ++i) {
-//    std::cout << x.strain_energy.pvalue[i] << std::endl;
+//    std::cout << x1.strain_energy.pvalue[i] << std::endl;
 //  }
 //  std::cout << std::endl;
-//  x.hreverse();
-//
-//  for (int i = 0; i < 24; ++i) {
-//    printf(""
-//           "% 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, "
-//           //           "% 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, "
-//           "\n",
-//           x.node1.displacement.hvalue(i)(0),
-//           x.node1.displacement.hvalue(i)(1),
-//           x.node1.displacement.hvalue(i)(2),
-//           x.node1.rotation.hvalue(i)(0),
-//           x.node1.rotation.hvalue(i)(1),
-//           x.node1.rotation.hvalue(i)(2),
-//           x.node2.displacement.hvalue(i)(0),
-//           x.node2.displacement.hvalue(i)(1),
-//           x.node2.displacement.hvalue(i)(2),
-//           x.node2.rotation.hvalue(i)(0),
-//           x.node2.rotation.hvalue(i)(1),
-//           x.node2.rotation.hvalue(i)(2)
-//        /*x.node3.displacement.hvalue(i)(0),
-//        x.node3.displacement.hvalue(i)(1),
-//        x.node3.displacement.hvalue(i)(2),
-//        x.node3.rotation.hvalue(i)(0),
-//        x.node3.rotation.hvalue(i)(1),
-//        x.node3.rotation.hvalue(i)(2),
-//        x.node4.displacement.hvalue(i)(0),
-//        x.node4.displacement.hvalue(i)(1),
-//        x.node4.displacement.hvalue(i)(2),
-//        x.node4.rotation.hvalue(i)(0),
-//        x.node4.rotation.hvalue(i)(1),
-//        x.node4.rotation.hvalue(i)(2)*/
-//    );
-//  }
+  x1.hreverse();
+
+  for (int i = 0; i < 24; ++i) {
+    printf(""
+           "% 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, "
+           //           "% 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, "
+           //           "% 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, % 5.2f, "
+           //           "% 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, % 7.2f, "
+           "\n",
+           x1.node1.displacement.hvalue(i)(0),
+           x1.node1.displacement.hvalue(i)(1),
+           x1.node1.displacement.hvalue(i)(2) //
+        ,
+           x1.node1.rotation.hvalue(i)(0),
+           x1.node1.rotation.hvalue(i)(1),
+           x1.node1.rotation.hvalue(i)(2) //
+        /*,
+        x1.node2.displacement.hvalue(i)(0),
+        x1.node2.displacement.hvalue(i)(1),
+        x1.node2.displacement.hvalue(i)(2) //
+        ,
+        x1.node2.rotation.hvalue(i)(0),
+        x1.node2.rotation.hvalue(i)(1),
+        x1.node2.rotation.hvalue(i)(2) //*/
+        /*,
+        x1.node3.displacement.hvalue(i)(0),
+        x1.node3.displacement.hvalue(i)(1),
+        x1.node3.displacement.hvalue(i)(2) //
+        ,
+        x1.node3.rotation.hvalue(i)(0),
+        x1.node3.rotation.hvalue(i)(1),
+        x1.node3.rotation.hvalue(i)(2) //
+        ,
+        x1.node4.displacement.hvalue(i)(0),
+        x1.node4.displacement.hvalue(i)(1),
+        x1.node4.displacement.hvalue(i)(2) //
+        ,
+        x1.node4.rotation.hvalue(i)(0),
+        x1.node4.rotation.hvalue(i)(1),
+        x1.node4.rotation.hvalue(i)(2)*/
+    );
+  }
 
 
   /*print_vector(n1_1.rotation.value());

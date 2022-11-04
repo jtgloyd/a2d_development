@@ -1902,7 +1902,7 @@ class A2DVec3CrossVecExpr {
 //                output:
       Vec<T, 3>& xh = xObj.hvalue(i);
 //                operations:
-      Vec3CrossProductCore(y, vh, xh);
+      Vec3CrossProductAddCore(y, vh, xh);
     }
   };
 
@@ -1959,7 +1959,7 @@ class Vec3CrossA2DVecExpr {
 //                output:
       Vec<T, 3>& yh = yObj.hvalue(i);
 //                operations:
-      Vec3CrossProductCore(vh, x, yh);
+      Vec3CrossProductAddCore(vh, x, yh);
     }
   };
 

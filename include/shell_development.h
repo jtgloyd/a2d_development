@@ -46,6 +46,13 @@ template <int N, typename T>
 class ShellNodeMITC {
  public:
 
+  ShellNodeMITC()
+      : position(position_value),
+        thickness(0.1, 0),
+        shell_director(director_value),
+        displacement(displacement_value, displacement_bvalue),
+        rotation(rotation_vector_value, rotation_vector_bvalue) {};
+
   ShellNodeMITC(Vec<T, 3> initial_position,
                 Vec<T, 3> initial_shell_director,
                 Vec<T, 3> displacement,
@@ -72,9 +79,9 @@ class ShellNodeMITC {
         shell_director(initial_shell_director),
         displacement(displacement_value, displacement_bvalue),
         rotation(rotation_vector_value, rotation_vector_bvalue) {
-    for (int i = 0; i < 3; ++i) {
-      rotation.value()(i) = shell_director(i);
-    }
+    rotation.value()(0) = 0;
+    rotation.value()(1) = 0;
+    rotation.value()(2) = 0;
   };
 
   ShellNodeMITC(const ShellNodeMITC<N, T>& shell_node)
@@ -599,11 +606,10 @@ class ShellElementMITC4 {
     e_rt_A_expression.hreverse();
   };
 
-  ShellNodeMITC<N, T>& node1;  /**< The top left node. */
-  ShellNodeMITC<N, T>& node2;  /**< The top right node.*/
-  ShellNodeMITC<N, T>& node3;  /**< The bottom left node. */
-  ShellNodeMITC<N, T>& node4;  /**< The bottom right node.*/
-  // TODO: make sure this is correct ^
+  ShellNodeMITC<N, T>& node1;  /**< The bottom left node. */
+  ShellNodeMITC<N, T>& node2;  /**< The bottom right node.*/
+  ShellNodeMITC<N, T>& node3;  /**< The top right node. */
+  ShellNodeMITC<N, T>& node4;  /**< The top left node.*/
 
   /** Strain energy object */
   A2DScalar<N, T> strain_energy;

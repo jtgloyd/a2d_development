@@ -244,8 +244,7 @@ class A2DVec3A2DScaleDivExpr {
           (Vec3DotCore<T>(vh, x) * aNegativeInvSquared) +
               (Vec3DotCore<T>(vb, x) * aInvCubed2 * ap) +
               (Vec3DotCore<T>(vb, xp) * aNegativeInvSquared);
-      Vec3AXPYCore(aInv, vh, xh, xh);
-      Vec3AXPYCore(ap * aNegativeInvSquared, vb, xh, xh);
+      Vec3AXPBYIncrementCore(aInv, vh, ap * aNegativeInvSquared, vb, xh);
     }
   };
 
